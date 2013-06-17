@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package datomisca
-
-package dmacros
+package datomisca.dmacros
 
 import scala.reflect.macros.Context
 import scala.reflect.internal.util.{Position, OffsetPosition}

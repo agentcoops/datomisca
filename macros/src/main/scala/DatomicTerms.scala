@@ -57,7 +57,10 @@ case class Var(name: String) extends Term {
   override def toString = "?" + name
 }
 
-case class Keyword(override val name: String, override val ns: Option[Namespace] = None) extends Term with Namespaceable with Positional
+case class Keyword(
+  override val name: String, 
+  override val ns: Option[Namespace] = None
+) extends Term with Namespaceable with Positional
 
 object Keyword {
   def apply(name: String, ns: Namespace) = new Keyword(name, Some(ns))

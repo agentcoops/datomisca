@@ -24,12 +24,28 @@ import scala.util.parsing.input.Positional
 trait Rule extends Positional
 
 /* DATOMIC DATA RULES */
-case class DataRule(ds: DataSource = ImplicitDS, entity: Term = Empty, attr: Term = Empty, value: Term = Empty, tx: Term = Empty, added: Term = Empty) extends Rule {
+case class DataRule(
+  ds: DataSource = ImplicitDS, 
+  entity: Term = Empty, 
+  attr: Term = Empty, 
+  value: Term = Empty, 
+  tx: Term = Empty, 
+  added: Term = Empty
+) extends Rule {
   override def toString = """[%s%s%s%s%s%s]""".format(
     if(ds == ImplicitDS) "" else ds+" ",
-    if(entity == Empty){ if(attr != Empty || value != Empty || tx != Empty || added != Empty) (entity+" ") else ""} else entity,
-    if(attr == Empty){ if(value != Empty || tx != Empty || added != Empty) (" "+attr) else ""} else (" "+attr),
-    if(value == Empty){ if(tx != Empty || added != Empty) (" "+value) else "" } else (" "+value),
+    if(entity == Empty) { 
+      if(attr != Empty || value != Empty || tx != Empty || added != Empty) (entity+" ") 
+      else ""
+    } else entity,
+    if(attr == Empty) { 
+      if(value != Empty || tx != Empty || added != Empty) (" "+attr) 
+      else ""
+    } else (" "+attr),
+    if(value == Empty) { 
+      if(tx != Empty || added != Empty) (" "+value) 
+      else "" 
+    } else (" "+value),
     if(tx == Empty){ if(added != Empty) (" "+tx) else "" } else (" "+tx),
     if(added == Empty) "" else (" "+added)
   )
@@ -66,16 +82,26 @@ case class ExpressionRule(expr: Expression) extends Rule {
 }
 
 sealed trait Expression
-case class PredicateExpression(predicate: DPredicate, args: Seq[Term]) extends Expression {
-  override def toString = s"""($predicate ${args.map( _.toString ).mkString(" ")})"""
+case class PredicateExpression(
+  predicate: DPredicate, 
+  args: Seq[Term]
+) extends Expression {
+  override def toString = 
+    s"""($predicate ${args.map( _.toString ).mkString(" ")})"""
 }
-case class FunctionExpression(function: DFunction, args: Seq[Term], binding: Binding) extends Expression {
-  override def toString = s"""($function ${args.map( _.toString ).mkString(" ")}) $binding"""
+case class FunctionExpression(
+  function: DFunction, 
+  args: Seq[Term], 
+  binding: Binding
+) extends Expression {
+  override def toString = 
+    s"""($function ${args.map( _.toString ).mkString(" ")}) $binding"""
 }
 
 /* RULE ALIAS */
 case class RuleAliasCall(name: String, args: Seq[Term]) extends Rule {
-  override def toString = """( %s %s )""".format(name, args.map( _.toString ).mkString("", " ", ""))
+  override def toString = 
+    """( %s %s )""".format(name, args.map( _.toString ).mkString("", " ", ""))
 }
 
 /* WHERE */

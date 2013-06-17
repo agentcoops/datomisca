@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package datomisca
+package datomisca.dmacros
 
 import scala.reflect.macros.Context
 import language.experimental.macros
@@ -28,7 +28,7 @@ trait DatomicInception {
     val source = pos.source
     val computedOffset = source.lineToOffset(pos.line - 1 + offsetLine - 1 )
     val isMultiLine = source.beginsWith(pos.point, "\"\"\"")
-
+    
     val computedCol = 
       if(offsetLine > 1 && isMultiLine) (offsetCol - 1) 
       else if(isMultiLine) (offsetCol - 1 + pos.column - 1 + 3)
@@ -64,7 +64,8 @@ trait DatomicInception {
         case DSet(elts) => Apply(Ident(newTermName("DSet")), elts.map(incept(_)).toList)
         case id: DId => id match{
           case FinalId(v) => Apply(Ident(newTermName("FinalId")), List(Literal(Constant(v))))
-          case TempId(part, id, dbId) => Apply(Ident(newTermName("TempId")), List(incept(part), incept(id), Literal(Constant(dbId))))
+          case TempId(part, id, dbId) => 
+            Apply(Ident(newTermName("TempId")), List(incept(part), incept(id), Literal(Constant(dbId))))
         }
         //case DBigDec(v) => v.toString
         /*case DInstant(v) => Apply(Ident(newTermName("DInstant")), List(Literal(Constant(v))))
@@ -101,9 +102,12 @@ trait DatomicInception {
         case ds: DataSource => incept(ds)
       }
 
-      def incept(part: Partition): c.Tree = Apply( Ident(newTermName("Partition")), List(incept(part.keyword)) )
-      def incept(df: DFunction): c.Tree = Apply( Ident(newTermName("DFunction")), List(Literal(Constant(df.name))) )
-      def incept(df: DPredicate): c.Tree = Apply( Ident(newTermName("DPredicate")), List(Literal(Constant(df.name))) )
+      def incept(part: Partition): c.Tree = 
+        Apply( Ident(newTermName("Partition")), List(incept(part.keyword)) )
+      def incept(df: DFunction): c.Tree = 
+        Apply( Ident(newTermName("DFunction")), List(Literal(Constant(df.name))) )
+      def incept(df: DPredicate): c.Tree = 
+        Apply( Ident(newTermName("DPredicate")), List(Literal(Constant(df.name))) )
 
       def incept(b: Binding): c.Tree = b match {
         case ScalarBinding(name) => Apply( Ident(newTermName("ScalarBinding")), List(incept(name)) )
@@ -117,7 +121,8 @@ trait DatomicInception {
               )
             )
           )
-        case CollectionBinding(name) => Apply( Ident(newTermName("CollectionBinding")), List(incept(name)) )
+        case CollectionBinding(name) => 
+          Apply( Ident(newTermName("CollectionBinding")), List(incept(name)) )
         case RelationBinding(names) => 
           Apply( 
             Ident(newTermName("RelationBinding")), 
@@ -154,7 +159,10 @@ trait DatomicInception {
         case DataRule(ds, entity, attr, value, tx, added) =>
           Apply( Ident(newTermName("DataRule")), 
             List(
-              (if(ds == ImplicitDS) Ident(newTermName("ImplicitDS")) else Apply( Ident(newTermName("ExternalDS")), List(Literal(Constant(ds.name)))) ), 
+              if (ds == ImplicitDS) 
+                Ident(newTermName("ImplicitDS")) 
+              else 
+                Apply( Ident(newTermName("ExternalDS")), List(Literal(Constant(ds.name)))), 
               incept(entity), 
               incept(attr), 
               incept(value), 
@@ -179,7 +187,10 @@ trait DatomicInception {
         case DataRuleParsing(ds, entity, attr, value, tx, added) =>
           Apply( Ident(newTermName("DataRule")), 
             List(
-              (if(ds == ImplicitDS) Ident(newTermName("ImplicitDS")) else Apply( Ident(newTermName("ExternalDS")), List(Literal(Constant(ds.name)))) ), 
+              if (ds == ImplicitDS) 
+                Ident(newTermName("ImplicitDS")) 
+              else 
+                Apply( Ident(newTermName("ExternalDS")), List(Literal(Constant(ds.name)))), 
               incept(entity), 
               incept(attr), 
               incept(value), 
@@ -201,7 +212,12 @@ trait DatomicInception {
       }
 
       def incept(w: Where): c.Tree = 
-        Apply( Ident(newTermName("Where")), List( Apply(Ident(newTermName("Seq")), w.rules.map(incept(_)).toList )) )
+        Apply( 
+          Ident(newTermName("Where")), 
+          List( 
+            Apply(Ident(newTermName("Seq")), 
+                  w.rules.map(incept(_)).toList )) 
+        )
 
 
       def incept(i: Input): c.Tree = i match {
@@ -211,24 +227,42 @@ trait DatomicInception {
       }
 
       def incept(in: In): c.Tree = 
-        Apply( Ident(newTermName("In")), List( Apply(Ident(newTermName("Seq")), in.inputs.map(incept(_)).toList )) )
+        Apply( 
+          Ident(newTermName("In")), 
+          List( 
+            Apply(Ident(newTermName("Seq")), 
+                  in.inputs.map(incept(_)).toList )) 
+        )
 
       
       def incept(f: Find): c.Tree = 
-        Apply( Ident(newTermName("Find")), List( Apply(Ident(newTermName("Seq")), f.outputs.map(incept(_)).toList )) )  
+        Apply( 
+          Ident(newTermName("Find")), 
+          List( 
+            Apply(Ident(newTermName("Seq")), 
+                  f.outputs.map(incept(_)).toList )) 
+        )  
 
       def incept(f: With): c.Tree = 
-        Apply( Ident(newTermName("With")), List( Apply(Ident(newTermName("Seq")), f.variables.map(incept(_)).toList )) )  
+        Apply( 
+          Ident(newTermName("With")), 
+          List( 
+            Apply(Ident(newTermName("Seq")), 
+                  f.variables.map(incept(_)).toList )) 
+        )  
 
-      def incept(q: PureQuery): c.universe.Tree = {
+      def incept(q: PureQuery): c.universe.Tree =
         Apply(
           Ident(newTermName("PureQuery")), 
           List(incept(q.find)) ++ 
-          q.wizz.map{ wizz => List(Apply(Ident(newTermName("Some")), List(incept(wizz)))) }.getOrElse(List(Ident(newTermName("None")))) ++ 
-          q.in.map{ in => List(Apply(Ident(newTermName("Some")), List(incept(in)))) }.getOrElse(List(Ident(newTermName("None")))) ++ 
-          List(incept(q.where))
+            q.wizz.map { 
+              wizz => List( Apply(Ident(newTermName("Some")), List(incept(wizz))) ) 
+            }.getOrElse(List(Ident(newTermName("None")))) ++ 
+            q.in.map { 
+              in => List(Apply(Ident(newTermName("Some")), List(incept(in)))) 
+            }.getOrElse(List(Ident(newTermName("None")))) ++ 
+            List(incept(q.where))
         )
-      }
 
       def incept[A <: Args, B <: Args](q: TypedQueryInOut[A, B]): c.universe.Tree = {
         Apply(
@@ -305,7 +339,9 @@ trait DatomicInception {
             fact.id match {
               case Left(se: ScalaExpr) => inceptId(Left(se))
               case Right(id: DIdParsing) => incept(id)
-              case _ => c.abort(c.enclosingPosition, "A Fact only accepts a #db/id[:db.part/XXX] or a scala DId as 1st param")
+              case _ => c.abort(
+                c.enclosingPosition, 
+                "A Fact only accepts a #db/id[:db.part/XXX] or a scala DId as 1st param")
             },
             incept(fact.attr),
             localIncept(fact.value)

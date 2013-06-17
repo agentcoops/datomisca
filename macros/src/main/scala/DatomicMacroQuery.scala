@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package datomisca
-
-package dmacros
+package datomisca.dmacros
 
 import scala.reflect.macros.Context
 import scala.reflect.internal.util.{Position, OffsetPosition}
@@ -47,21 +45,28 @@ object DatomicQueryMacro extends DatomicInception {
     
   }
 
-  def typedQueryImpl[A <: Args : c.WeakTypeTag, B <: Args : c.WeakTypeTag](c: Context)(q: c.Expr[String]) : c.Expr[TypedQueryInOut[A, B]] = {
+  def typedQueryImpl[
+    A <: Args : c.WeakTypeTag, 
+    B <: Args : c.WeakTypeTag
+  ](c: Context)(q: c.Expr[String]) : c.Expr[TypedQueryInOut[A, B]] = {
+
     def verifyInputs(query: Query): Option[PositionFailure] = {
       val tpe = implicitly[c.WeakTypeTag[A]].tpe
       val sz = query.in.map( _.inputs.size ).getOrElse(0)
       lazy val argPos = c.macroApplication.children(0).children(1).pos
-      query.in.flatMap{ in => 
+      query.in.flatMap { in => 
         if(
           (tpe <:< implicitly[c.TypeTag[Args2]].tpe && sz != 2) 
           || (tpe <:< implicitly[c.TypeTag[Args3]].tpe && sz != 3)
-        ) {
-          Some(PositionFailure("Query Error in \":in\" : Expected %d INPUT variables".format(sz), 1, argPos.column))
-        }
+        ) 
+          Some(
+            PositionFailure(
+              "Query Error in \":in\" : Expected %d INPUT variables".format(sz), 
+              1, 
+              argPos.column))
+                       
         else None
       }
-      
     }
 
     def verifyOutputs(query: Query): Option[PositionFailure] = {
@@ -73,7 +78,12 @@ object DatomicQueryMacro extends DatomicInception {
         (tpe <:< implicitly[c.TypeTag[Args2]].tpe && sz != 2)
         || (tpe <:< implicitly[c.TypeTag[Args3]].tpe && sz != 3)
       )
-        Some(PositionFailure("Query Error in \":find\" : Expected %d OUTPUT variables".format(sz), 1, argPos.column))
+        Some(
+          PositionFailure(
+            "Query Error in \":find\" : Expected %d OUTPUT variables".format(sz), 
+            1, 
+            argPos.column))
+
       else None
     }
 
